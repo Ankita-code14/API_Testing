@@ -1,6 +1,5 @@
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
 import Payload_Files.Payloads_CourseDetails;
 import Utilis.Resuable_Methods;
 import io.restassured.path.json.JsonPath;
