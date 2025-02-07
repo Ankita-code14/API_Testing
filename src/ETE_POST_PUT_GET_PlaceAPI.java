@@ -1,9 +1,11 @@
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
+import static org.hamcrest.Matchers.*;
+
+import org.testng.Assert;
 
 import static io.restassured.RestAssured.*;
-
-import Payload_Files.Payloads;
+import Payload_Files.Payloads_Place;
 
 public class ETE_POST_PUT_GET_PlaceAPI {
 
@@ -16,22 +18,45 @@ public class ETE_POST_PUT_GET_PlaceAPI {
 		
 		//extract response as a String
 		
+		String keyValue = "qaclick123";
 		RestAssured.baseURI = "https://rahulshettyacademy.com";
 		
-		String response = given().queryParams("key", "qaclick123").headers("Content-Type", "application/json")
-			.body(Payloads.addPlace())
+		String addplace_Response = given().queryParams("key", keyValue).headers("Content-Type", "application/json")
+			.body(Payloads_Place.addPlace())
 		.when().post("maps/api/place/add/json")
 		.then().extract().asString();
 		
-		System.out.println(response);
+		System.out.println(addplace_Response);
 		
 		//Using Json Path class for parsing the Json response and extract respective value
 		
-		JsonPath js = new JsonPath(response);
+		JsonPath js = new JsonPath(addplace_Response);
 		String placeId = js.getString("place_id");
 		
 		System.out.println(placeId);
 		
+		//Update place API
+		
+		String newAddress = "Arendelle house, Canada";
+		
+		given().queryParams("key", keyValue).headers("Content-Type", "application/json")
+			.body(Payloads_Place.updatePlace(placeId, newAddress, keyValue))
+		.when().put("maps/api/place/update/json")
+		.then().assertThat().statusCode(200).body("msg", equalTo("Address successfully updated")); //Assert using restassured method 
+		
+		
+		//Get Place API
+		
+		String getPlace_Response = given().queryParams("key", keyValue, "place_id", placeId)
+		.when().get("maps/api/place/get/json")
+		.then().assertThat().statusCode(200).extract().response().asString();
+		
+		JsonPath js1 = new JsonPath(getPlace_Response);
+		String actualAdd = js1.getString("address");
+		
+		System.out.println(actualAdd);
+		
+		Assert.assertEquals(actualAdd, newAddress); //assert using testng method
 	}
 
 }
